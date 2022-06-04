@@ -2,309 +2,421 @@ import axios from '../axios'
 import { useState, useEffect, useLayoutEffect } from 'react'
 import casual from 'casual-browserify'
 import moment from 'moment'
+import { Modal, Button, Form, Col, Row } from 'react-bootstrap'
+import { toast } from 'react-toastify'
 
-const Thembenhnhan = () => {
-  // const [a, setA] = useState({
-  //   ho: '',
-  //   ten: '',
-  //   sohoso: '',
-  //   gioitinh: 1,
-  //   namsinh: undefined,
-  //   sodienthoai: '',
-  //   ngaynhanhen: moment(Date.now()).format('YYYY-MM-DDTHH:mm'),
-  //   ngayhendo: moment(Date.now()).format('YYYY-MM-DDTHH:mm'),
-  //   loaichidinh: '',
-  //   tinhtrangdo: 'Chưa hẹn',
-  //   khoaphong: '',
-  //   ngaydo: undefined,
-  //   kythuavien: '',
-  //   bacsi: '',
-  //   ghichu: '',
-  //   image: '',
-  // })
+const Thembenhnhan = (props) => {
+  const { show, closeAddNew, update } = props
+  const [f, setF] = useState('')
+  const [h, setH] = useState(false) //bất hoạt nút thêm
+
 
   const [a, setA] = useState({
-    ho: casual.last_name,
-    ten: casual.first_name,
-    sohoso: Math.round(casual.random * 1000000),
-    gioitinh: casual.boolean === true ? 1 : 0,
-    namsinh:  moment(-880866300000 + 2554416000000*Math.random()).format('YYYY-MM-DD'),
-    sodienthoai: casual.phone,
-    ngaynhanhen:  moment(1642013700000 + 31536000000*Math.random()).format('YYYY-MM-DDTHH:mm'),
-    ngayhendo: moment(1642013700000 + 31536000000*Math.random()).format('YYYY-MM-DDTHH:mm'),
-    loaichidinh: 'Thường quy',
-    tinhtrangdo: 'Chưa hẹn',
-    khoaphong: casual.company_name,
-    ngaydo: moment(1642013700000 + 31536000000*Math.random()).format('YYYY-MM-DDTHH:mm'),
-    kythuavien: casual.full_name,
-    bacsi: casual.full_name,
-    ghichu: casual.description,
+    ho: '',
+    ten: '',
+    sohoso: '',
+    gioitinh: '',
+    namsinh: undefined,
+    sodienthoai: '',
+    ngaynhanhen: moment(Date.now()).format('YYYY-MM-DDTHH:mm'),
+    ngayhendo: undefined,
+    loaichidinh: '',
+    tinhtrangdo: 'Đã hẹn',
+    khoaphong: '',
+    ngaydo: undefined,
+    kythuavien: '',
+    bacsi: '',
+    ghichu: '',
+    status: 1,
     image: '',
   })
 
+  // const [a, setA] = useState({
+  //   ho: casual.last_name,
+  //   ten: casual.first_name,
+  //   sohoso: Math.round(casual.random * 100000000),
+  //   gioitinh: casual.boolean === true ? 1 : 0,
+  //   namsinh: moment(-880866300000 + 2554416000000 * Math.random()).format('YYYY-MM-DD'),
+  //   sodienthoai: casual.phone,
+  //   ngaynhanhen: moment(1642013700000 + 31536000000 * Math.random()).format('YYYY-MM-DDTHH:mm'),
+  //   ngayhendo: moment(1642013700000 + 31536000000 * Math.random()).format('YYYY-MM-DDTHH:mm'),
+  //   loaichidinh: 'Thường quy',
+  //   tinhtrangdo: 'Chưa hẹn',
+  //   khoaphong: casual.company_name,
+  //   ngaydo: moment(1642013700000 + 31536000000 * Math.random()).format('YYYY-MM-DDTHH:mm'),
+  //   kythuavien: casual.full_name,
+  //   bacsi: casual.full_name,
+  //   ghichu: casual.description,
+  //   image: '',
+  // })
+  let clearForm = () => {
+    setA({
+      ho: '',
+      ten: '',
+      sohoso: '',
+      gioitinh: '',
+      namsinh: undefined,
+      sodienthoai: '',
+      ngaynhanhen: moment(Date.now()).format('YYYY-MM-DDTHH:mm'),
+      ngayhendo: undefined,
+      loaichidinh: '',
+      tinhtrangdo: 'Đã hẹn',
+      khoaphong: '',
+      ngaydo: undefined,
+      kythuavien: '',
+      bacsi: '',
+      ghichu: '',
+      status: 1,
+      image: '',
+    })
+  }
   let A = (e, T) => {
     setA({ ...a, [T]: e.target.value })
   }
   let B = async (a) => {
     try {
+      await setH(true)
       let b = await axios.post('/api/save', a)
+      const c = await axios.get('/api/get')
+      await update(c)
+      // await clearForm()
+      {b ?  await clearForm() : setF('') }
+      await setH(false)
+
+      {b ?  await closeAddNew() : setF('') }
+
+      toast.info('Tạo mới thành công!')
     } catch (e) {
       console.log(e)
     }
   }
-  // console.log('kiem tra them',a)
+  // console.log('kiem tra b',b) 
+  // console.log('kiem tra them', a)
   return (
-    <div style={{ position: 'absolute', left: '0px' }}>
-      <div
-        className=""
-        id=""
-        style={{
-          margin: 50,
-          padding: 30,
-          width: 450,
-          height: 750,
-          border: '1px solid black',
-        }}>
-        <h2>Thêm bênh nhân</h2>
-
-        <div className="">
-          <label>Họ và tên lót</label>
-          <input
-            type="text"
-            className=""
-            onChange={(e) => {
-              A(e, 'ho')
-            }}
-            value={a.ho}
-          />
-        </div>
-
-        <div className="">
-          <label>Tên *</label>
-          <input
-            type="text"
-            className=""
-            value={a.ten}
-            onChange={(e) => {
-              A(e, 'ten')
-            }}
-          />
-        </div>
-        <div className="">
-          <label>Số hồ sơ</label>
-          <input
-            type="text"
-            className=""
-            value={a.sohoso}
-            onChange={(e) => {
-              A(e, 'sohoso')
-            }}
-          />
-        </div>
-        <div className="" style={{ margin: '20px 10px 20px 120px' }}>
-          <input
-            type="radio"
-            name="gioitinh"
-            className="optionBox"
-            defaultChecked={a.gioitinh === 1}
-            onClick={() => {
-              setA({ ...a, gioitinh: 1 })
-            }}
-          />
-          <a>Nam </a>
-          <input
-            type="radio"
-            name="gioitinh"
-            className="optionBox"
-            defaultChecked={a.gioitinh === 0}
-            onClick={() => {
-              setA({ ...a, gioitinh: 0 })
-            }}
-          />
-          <a>Nữ</a>
-        </div>
-
-        <div className="" style={{ display: 'block' }}>
-          <label>Năm sinh</label>
-          <input
-            type="date"
-            className=""
-            value={a.namsinh}
-            onChange={(e) => {
-              A(e, 'namsinh')
-            }}
-          />
-        </div>
-
-        <div className="">
-          <label>Số điện thoại *</label>
-          <input
-            type="text"
-            className=""
-            value={a.sodienthoai}
-            onChange={(e) => {
-              A(e, 'sodienthoai')
-            }}
-          />
-        </div>
-        <div className="">
-          <label>Ngày nhận hẹn</label>
-          <input
-            type="datetime-local"
-            className=""
-            value={a.ngaynhanhen}
-            onChange={(e) => {
-              A(e, 'ngaynhanhen')
-            }}
-          />
-        </div>
-        <div className="">
-          <label>Ngày hẹn đo</label>
-          <input
-            type="datetime-local"
-            className=""
-            value={a.ngayhendo}
-            onChange={(e) => {
-              A(e, 'ngayhendo')
-            }}
-          />
-        </div>
-
-        <div className="">
-          <label className=""> Loại chỉ định </label>
-          <select
-            className=""
-            value={a.loaichidinh}
-            onChange={(e) => {
-              A(e, 'loaichidinh')
+    <div style={{}}>
+      <Modal
+        show={show}
+        onHide={closeAddNew}
+        backdrop="static"
+        keyboard={false}
+        animation={false}
+        // size="sm"
+        style={{ width: '360px', paddingBottom: '100px' }}
+        // className="col-sm-6"
+        // sm={{width: '300px'}}
+        centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Thêm bệnh nhân</Modal.Title>
+        </Modal.Header>
+        <Modal.Footer
+          style={{ justifyContent: 'flex-start', paddingBottom: '0px', paddingTop: '0px' }}>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={h}
+            onClick={async () => {
+              await B(a)
+              // closeAddNew()
+              // clearForm()
             }}>
-            <option value="Thường quy">Thường quy</option>
-            <option defaultValue value="Thường quy (tại giường)">
-              Thường quy (tại giường)
-            </option>
-            <option value="Giấc ngủ ngắn 60ph">Giấc ngủ ngắn 60ph</option>
-            <option value="Giấc ngủ ngắn 60ph (tại giường)">Giấc ngủ ngắn 60ph (tại giường)</option>
-            <option value="Giấc ngủ trưa">Giấc ngủ trưa</option>
-            <option value="8h">8h</option>
-            <option value="8h (tại giường)">8h (tại giường)</option>
-            <option value="Qua đêm">Qua đêm</option>
-            <option value="Qua đêm (tại giường)">Qua đêm (tại giường)</option>
-            <option value="24h">24h</option>
-            <option value="24h (tại giường)">24h (tại giường)</option>
-          </select>
-        </div>
-
-        <div className="">
-          <label className=""> Tình trạng đo </label>
-          <select
-            className=""
-            value={a.tinhtrangdo}
-            onChange={(e) => {
-              A(e, 'tinhtrangdo')
+            Thêm bệnh nhân
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              closeAddNew()
+              clearForm()
             }}>
-            <option defaultValue value="Chưa hẹn">
-              Chưa hẹn
-            </option>
-            <option value="Đã hẹn">Đã hẹn</option>
-            <option value="Đang đo">Đang đo</option>
-            <option value="Đã đo">Đã đo</option>
-            <option value="Đã có kết quả">Đã có kết quả</option>
-            <option value="Đã trả kết quả">Đã trả kết quả</option>
-          </select>
-        </div>
+            Close
+          </Button>
+        </Modal.Footer>
+        <Modal.Body style={{ paddingTop: '0px' }}>
+          <Form>
+            <Form.Group className="">
+              <Form.Label>Họ và tên lót</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                autoFocus
+                onChange={(e) => {
+                  A(e, 'ho')
+                }}
+                value={a.ho}
+                id="ten"
+              />
+            </Form.Group>
 
-        <div className="">
-          <label>Khoa/phòng</label>
-          <input
-            type="text"
-            className=""
-            value={a.khoaphong}
-            onChange={(e) => {
-              A(e, 'khoaphong')
-            }}
-          />
-        </div>
+            <Form.Group className="">
+              <Form.Label>Tên *</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                value={a.ten}
+                onChange={(e) => {
+                  A(e, 'ten')
+                }}
+              />
+            </Form.Group>
 
-        <div className="">
-          <label>Ngày đo</label>
-          <input
-            type="datetime-local"
-            className=""
-            value={a.ngaydo}
-            onChange={(e) => {
-              A(e, 'ngaydo')
-            }}
-          />
-        </div>
-        {/* hiện ảnh khi  được chọn */}
-        <div className="">
-          <label>Kỹ thuật viên</label>
-          <input
-            type="text"
-            className=""
-            value={a.kythuavien}
-            onChange={(e) => {
-              A(e, 'kythuavien')
-            }}
-          />
-        </div>
+            <Form.Group className="">
+              <Form.Label>Số hồ sơ</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                value={a.sohoso}
+                onChange={(e) => {
+                  A(e, 'sohoso')
+                }}
+              />
+            </Form.Group>
 
-        <div className="">
-          <label>Bác sĩ đọc</label>
-          <input
-            type="text"
-            className=""
-            value={a.bacsi}
-            onChange={(e) => {
-              A(e, 'bacsi')
-            }}
-          />
-        </div>
+            <Form.Group className="" as={Row}>
+              <Col xs="4" sm="4" md="3" lg="3">
+                <Form.Check
+                  type="radio"
+                  id=""
+                  name="gioitinh"
+                  label="Nam"
+                  defaultChecked={a.gioitinh === 'nam'}
+                  onClick={() => {
+                    setA({ ...a, gioitinh: 'nam' })
+                  }}
+                />
+              </Col>
+              <Col xs="4" sm="4" md="3" lg="3">
+                <Form.Check
+                  type="radio"
+                  id=""
+                  name="gioitinh"
+                  label="Nữ"
+                  defaultChecked={a.gioitinh === 'nữ'}
+                  onClick={() => {
+                    setA({ ...a, gioitinh: 'nữ' })
+                  }}
+                />
+              </Col>
+            </Form.Group>
 
-        <div className="">
-          <label>Ghi chú</label>
-          <textarea
-            style={{ width: '300px' }}
-            type="text"
-            className=""
-            value={a.ghichu}
-            // placeholder="Bs chỉ định, thời điểm cần kết quả"
-            onChange={(e) => {
-              A(e, 'ghichu')
-            }}
-          />
-        </div>
+            <Form.Group className="">
+              <Form.Label>Năm sinh</Form.Label>
+              <Form.Control
+                type="date"
+                size="sm"
+                placeholder=""
+                onChange={(e) => {
+                  A(e, 'namsinh')
+                }}
+                value={a.namsinh}
+              />
+            </Form.Group>
 
-        <div className="">
-          <label>Hình ảnh</label>
-          <input
-            style={{ width: '300px' }}
-            type="file"
-            className=""
-            // file={a.image}
-            onChange={(e) => {
-              setA({ ...a, image: URL.createObjectURL(e.target.files[0]) })
-            }}
-          />
-        </div>
-        <div
-          style={{
-            backgroundImage: `url( ${a.image}  )`,
-            height: '100px',
-            backgroundSize: '50%',
-            backgroundRepeat: 'no-repeat',
-          }}>
-          {' '}
-        </div>
-        <button
-          className=""
-          onClick={() => {
-            B(a)
-          }}>
-          Lưu
-        </button>
-        <button className="">Thoát</button>
-      </div>
+            <Form.Group className="">
+              <Form.Label>Số điện thoại *</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                onChange={(e) => {
+                  A(e, 'sodienthoai')
+                }}
+                value={a.sodienthoai}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Ngày nhận hẹn</Form.Label>
+              <Form.Control
+                placeholder=""
+                size="sm"
+                type="datetime-local"
+                className=""
+                value={a.ngaynhanhen}
+                onChange={(e) => {
+                  A(e, 'ngaynhanhen')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Ngày hẹn đo</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                size="sm"
+                placeholder=""
+                value={a.ngayhendo}
+                onChange={(e) => {
+                  A(e, 'ngayhendo')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Loại chỉ định</Form.Label>
+              <Form.Select
+                className=""
+                value={a.loaichidinh}
+                onChange={(e) => {
+                  A(e, 'loaichidinh')
+                }}>
+                <option value=""></option>
+                <option value="Thường quy">Thường quy</option>
+                <option value="Thường quy (tại giường)">Thường quy (tại giường)</option>
+                <option value="Giấc ngủ ngắn 60ph">Giấc ngủ ngắn 60ph</option>
+                <option value="Giấc ngủ ngắn 60ph (tại giường)">
+                  Giấc ngủ ngắn 60ph (tại giường)
+                </option>
+                <option value="Giấc ngủ trưa">Giấc ngủ trưa</option>
+                <option value="8h">8h</option>
+                <option value="8h (tại giường)">8h (tại giường)</option>
+                <option value="Qua đêm">Qua đêm</option>
+                <option value="Qua đêm (tại giường)">Qua đêm (tại giường)</option>
+                <option value="24h">24h</option>
+                <option value="24h (tại giường)">24h (tại giường)</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Tình trạng đo</Form.Label>
+              <Form.Select
+                className=""
+                value={a.tinhtrangdo}
+                onChange={(e) => {
+                  A(e, 'tinhtrangdo')
+                }}>
+                <option value="Chưa hẹn">Chưa hẹn</option>
+                <option value="Đã hẹn">Đã hẹn</option>
+                <option value="Đang đo">Đang đo</option>
+                <option value="Đã đo">Đã đo</option>
+                <option value="Đã có kết quả">Đã có kết quả</option>
+                <option value="Đã liên hệ">Đã liên hệ</option>
+                <option value="Đã trả kết quả">Đã trả kết quả</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Khoa/phòng</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                value={a.khoaphong}
+                onChange={(e) => {
+                  A(e, 'khoaphong')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Ngày đo</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                placeholder=""
+                size="sm"
+                className=""
+                value={a.ngaydo}
+                onChange={(e) => {
+                  A(e, 'ngaydo')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Kỹ thuật viên</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                value={a.kythuavien}
+                onChange={(e) => {
+                  A(e, 'kythuavien')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Bác sĩ đọc</Form.Label>
+              <Form.Control
+                type="text"
+                size="sm"
+                placeholder=""
+                className=""
+                value={a.bacsi}
+                onChange={(e) => {
+                  A(e, 'bacsi')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label>Ghi chú</Form.Label>
+
+              <Form.Control
+                as="textarea"
+                rows={2}
+                placeholder=""
+                size="sm"
+                className=""
+                value={a.ghichu}
+                onChange={(e) => {
+                  A(e, 'ghichu')
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group className="">
+              <Form.Label>Hình ảnh</Form.Label>
+              <Form.Control
+                type="file"
+                size="sm"
+                placeholder=""
+                style={{ width: '250px' }}
+                className=""
+                // file={a.image}
+                onChange={(e) => {
+                  setA({ ...a, image: URL.createObjectURL(e.target.files[0]) })
+                }}
+              />
+              <div
+                style={{
+                  backgroundImage: `url( ${a.image}  )`,
+                  height: '100px',
+                  backgroundSize: '50%',
+                  backgroundRepeat: 'no-repeat',
+                  border: ' 1px solid',
+                }}></div>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer style={{ justifyContent: 'flex-start' }}>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={h}
+            onClick={async () => {
+              await B(a)
+
+              // {b ?  closeAddNew(): none}
+              // await clearForm()
+              // closeAddNew()
+             
+            }}>
+            Thêm bệnh nhân
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              closeAddNew()
+              clearForm()
+            }}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   )
 }

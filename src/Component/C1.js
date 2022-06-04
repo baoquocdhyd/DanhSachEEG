@@ -4,115 +4,185 @@ import dateFormat from 'dateformat'
 import moment from 'moment'
 import '../../node_modules/bootstrap/dist/css/bootstrap.min.css'
 import Thembenhnhan from './Thembenhnhan.js'
+import ModalConfirmDel from './Xacnhanxoa.js'
 import Suathongtin from './Sua thong tin.js'
+import Tablexoa from './Tablexoa.js'
 import Boloc from './Boloc.js'
+import { Button, Col, Row, Table } from 'react-bootstrap'
+import { toast } from 'react-toastify'
+
 import './table.scss'
+import _ from 'lodash'
+
+// REACT_APP_BACKEND_URL=https://danhsachdiennao.herokuapp.com
+// REACT_APP_BACKEND_URL=http://localhost:8080
 const C1 = () => {
   const [a, setA] = useState([])
   const [b, setB] = useState([])
-  const [c, setC] = useState(false)
-  const [d, setD] = useState(false)
-  const [sort, setSort] = useState({ ten: 0, ngayhendo: 0, ngaydo: 1 })
+  const [c, setC] = useState(false) //thêm bệnh nhân
+  const [d, setD] = useState(false) //sửa bệnh nhân
+  const [e, setE] = useState(false) //nút thêm bệnh nhân
+  const [f, setF] = useState(false) //modal xác nhận xóa
+  const [g, setG] = useState(false) //table quản lý xóa
+  const [idForDelete, setIdForDelete] = useState({}) //id của dòng xóa
+
+  const [sortField, setSortField] = useState('id')
+  const [sortOrder, setSortOrder] = useState('desc')
 
   const Fi = async () => {
     const A = await axios.get('/api/get')
-    // const S = A.sort(function(a, b){
-    //   let x = a.ngaydo;
-    //   let y = b.ngaydo;
-    //   if (x > y) {return -1;}
-    //   if (x < y) {return 1;}
-    //   return 0;
-    // }
-    // )
-    setA(A)
+    await setA(A)
+    toast.info('Cập nhật thành công!')
+    setE(true)
   }
   useLayoutEffect(() => {
     Fi()
   }, [])
-
-  const F = async (filterPatient) => {
-    const A = await axios.get('/api/get')
-    const data = await A.filter(function (a, b) {
-      return (
-        (a.ten
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/đ/g, 'd')
-          .replace(/Đ/g, 'D')
-          .includes(
-            filterPatient.hoVaTen
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/đ/g, 'd')
-              .replace(/Đ/g, 'D')
-          ) ||
-          a.ho
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd')
-            .replace(/Đ/g, 'D')
-            .includes(
-              filterPatient.hoVaTen
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/đ/g, 'd')
-                .replace(/Đ/g, 'D')
-            )) &&
-        a.tinhtrangdo.includes(filterPatient.tinhTrangDo) &&
-        a.ngayhendo >= filterPatient.henTuNgay &&
-        (filterPatient.henDenNgay ? a.ngayhendo <= filterPatient.henDenNgay : true) &&
-        a.ngaydo >= filterPatient.doTuNgay &&
-        (filterPatient.doDenNgay ? a.ngaydo <= filterPatient.doDenNgay : true)
-      )
-    })
-
-    // {
-    //   console.log('Kiemtra data', data)
-    //   console.log('Kiemtra .hoVaTen', filterPatient)
-    // }
-    setA(data)
-    // {console.log('C1',data)}
+  const closeAddNew = () => {
+    setC(false)
+    setD(false)
+    setF(false)
   }
 
   let C = async (a) => {
     try {
-      await axios.delete('/api/delete', { data: { id: a.id } })
+      const res = await axios.delete('/api/delete', { data: { id: a.id } })
       Fi()
     } catch (e) {
       console.log(e)
     }
   }
-  const sortten = (a) => {
-    setSort({ ...sort, ten: sort.ten === 0 ? 1 : sort.ten === 1 ? 2 : 0 })
+  const sort = (field, order) => {
+    setSortField(field)
+    setSortOrder(order)
+    let b = _.cloneDeep(a)
+    let c = _.orderBy(b, [field], [order])
+    setA(c)
   }
-  const sortngayhendo = (a) => {
-    setSort({ ...sort, ngayhendo: sort.ngayhendo === 0 ? 1 : sort.ngayhendo === 1 ? 2 : 0 })
+  const sortTinhTrangDo = (field, order) => {
+    setSortField(field)
+    setSortOrder(order)
+    let b = _.cloneDeep(a)
+    let c = _.sortBy(b, function (element) {
+      var rank = {
+        'Chưa hẹn': 1,
+        'Đã hẹn': 2,
+        'Đang đo': 3,
+        'Đã đo': 4,
+        'Đã có kết quả': 5,
+        'Đã trả kết quả': 6,
+      }
+
+      return rank[element.tinhtrangdo]
+    })
+    setA(c)
   }
-  const sortngaydo = (a) => {
-    setSort({ ...sort, ngaydo: sort.ngaydo === 0 ? 1 : sort.ngaydo === 1 ? 2 : 0 })
+  const sortTinhTrangDoRevert = (field, order) => {
+    setSortField(field)
+    setSortOrder(order)
+    let b = _.cloneDeep(a)
+    let c = _.sortBy(b, function (element) {
+      var rank = {
+        'Chưa hẹn': 6,
+        'Đã hẹn': 5,
+        'Đang đo': 4,
+        'Đã đo': 3,
+        'Đã có kết quả': 2,
+        'Đã trả kết quả': 1,
+      }
+
+      return rank[element.tinhtrangdo]
+    })
+    setA(c)
   }
+
+  const handleDelete = (userId) => {
+    setF(true)
+    setIdForDelete(userId) }
+  
+  // const [idForDelete, setIdForDelete] = useState({})
+
+  console.log('Kiem tra g', g)
+  console.log('Kiem tra toàn bộ tải về', a)
   return (
     <div>
-      <h1 style={{ color: 'red', textAlign: 'center' }}>
-        Danh sách hẹn điện não: {a.length} bệnh nhân{' '}
-      </h1>
-      <Boloc F={F} />
-      <button
-        onClick={() => {
-          setD(true)
-        }}>
-        Thêm bệnh nhân
-      </button>
+      {!c && !d && !g &&(
+        <h1 style={{ color: 'red', textAlign: 'center' }} id="ten">
+          Danh sách EEG: {a.length} bn
+        </h1>
+      )}
+      {!c && !d && !g && <Boloc update={setA} setG={setG} />}
+      <Row style={{ paddingLeft: '13px' }}>
+        {!c && !d && e && !g &&(
+          <Button
+            as={Col}
+            xs="5"
+            sm="4"
+            md="3"
+            lg="2"
+            variant="success"
+            size="sm"
+            className=" mx-2 shadow"
+            onClick={() => {
+              setC(true)
+              setSortField('id')
+              setSortOrder('desc')
+            }}>
+            Thêm bệnh nhân
+          </Button>
+        )}
 
-      {!c && !d && (
-        <table id="customers" className="mt-3 mx-2">
-          <thead style={{ position: 'sticky', top: '0px' }}>
-            <tr>
-              <th style={{ width: '2%', minWidth: 20, textAlign: 'center' }}>id</th>
+        {!c && !d && e && !g &&(
+          <Button
+            as={Col}
+            xs="5"
+            sm="4"
+            md="3"
+            lg="2"
+            variant="success"
+            size="sm"
+            className=" mx-2 shadow"
+            onClick={() => {
+              Fi()
+            }}>
+            Refresh
+          </Button>
+        )}
+      </Row>
+
+      {!c && !d && !g &&(
+        <Table striped bordered hover size="sm" className="m-2 table">
+          <thead style={{ position: 'sticky', top: '0px' }} className="thead">
+            <tr className="tr1">
+              <th style={{ width: '2%', minWidth: 20, textAlign: 'center' }}>
+                id
+                <span style={{ float: 'right' }}>
+                  {sortField == 'id' && sortOrder == 'asc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-a-z"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('id', 'desc')
+                      }}></i>
+                  )}
+                  {sortField == 'id' && sortOrder == 'desc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-z-a"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('id', 'asc')
+                      }}></i>
+                  )}
+                  {sortField !== 'id' && (
+                    <i
+                      className="fa-solid fa-align-justify"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('id', 'desc')
+                      }}></i>
+                  )}
+                </span>
+              </th>
               <th
                 style={{
                   width: '10%',
@@ -121,11 +191,34 @@ const C1 = () => {
                   textAlign: 'center',
                   cursor: 'pointer',
                 }}
-                onClick={() => {
-                  sortten()
-                  console.log(sort)
-                }}>
+                onClick={() => {}}>
                 Họ và Tên
+                <span style={{ float: 'right' }}>
+                  {sortField == 'ten' && sortOrder == 'asc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-a-z"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ten', 'desc')
+                      }}></i>
+                  )}
+                  {sortField == 'ten' && sortOrder == 'desc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-z-a"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ten', 'asc')
+                      }}></i>
+                  )}
+                  {sortField !== 'ten' && (
+                    <i
+                      className="fa-solid fa-align-justify"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ten', 'asc')
+                      }}></i>
+                  )}
+                </span>
               </th>
               <th style={{ width: '5%', minWidth: 20, textAlign: 'center' }}>Giới</th>
               <th
@@ -136,11 +229,34 @@ const C1 = () => {
                   textAlign: 'center',
                   cursor: 'pointer',
                 }}
-                onClick={() => {
-                  sortngayhendo()
-                  console.log(sort)
-                }}>
+                onClick={() => {}}>
                 Ngày hẹn đo
+                <span style={{ float: 'right' }}>
+                  {sortField == 'ngayhendo' && sortOrder == 'asc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-a-z"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ngayhendo', 'desc')
+                      }}></i>
+                  )}
+                  {sortField == 'ngayhendo' && sortOrder == 'desc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-z-a"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ngayhendo', 'asc')
+                      }}></i>
+                  )}
+                  {sortField !== 'ngayhendo' && (
+                    <i
+                      className="fa-solid fa-align-justify"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ngayhendo', 'asc')
+                      }}></i>
+                  )}
+                </span>
               </th>
               <th
                 style={{
@@ -150,75 +266,144 @@ const C1 = () => {
                   textAlign: 'center',
                   cursor: 'pointer',
                 }}
-                onClick={() => {
-                  sortngaydo()
-                  console.log(sort)
-                }}>
+                onClick={() => {}}>
                 Ngày đo EEG
+                <span style={{ float: 'right' }}>
+                  {sortField == 'ngaydo' && sortOrder == 'asc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-a-z"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ngaydo', 'desc')
+                      }}></i>
+                  )}
+                  {sortField == 'ngaydo' && sortOrder == 'desc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-z-a"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ngaydo', 'asc')
+                      }}></i>
+                  )}
+                  {sortField !== 'ngaydo' && (
+                    <i
+                      className="fa-solid fa-align-justify"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sort('ngaydo', 'asc')
+                      }}></i>
+                  )}
+                </span>
               </th>
-              <th style={{ width: '10%', maxWidth: 40, textAlign: 'center' }}>Loại chỉ định</th>
-              <th style={{ width: '12%', maxWidth: 40, textAlign: 'center' }}>KTV</th>
-              <th style={{ width: '15%', minWidth: 100, textAlign: 'center' }}>Ghi chú</th>
-              <th style={{ width: '3%', minWidth: 10, textAlign: 'center' }}>Actions</th>
+              <th style={{ width: '10%', minWidth: 100, textAlign: 'center' }}>
+                Tình trạng đo
+                <span style={{ float: 'right' }}>
+                  {sortField == 'tinhtrangdo' && sortOrder == 'asc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-a-z"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sortTinhTrangDoRevert('tinhtrangdo', 'desc')
+                      }}></i>
+                  )}
+                  {sortField == 'tinhtrangdo' && sortOrder == 'desc' && (
+                    <i
+                      className="fa-solid fa-arrow-down-z-a"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sortTinhTrangDo('tinhtrangdo', 'asc')
+                      }}></i>
+                  )}
+                  {sortField !== 'tinhtrangdo' && (
+                    <i
+                      className="fa-solid fa-align-justify"
+                      style={{ color: 'blue', fontSize: '16px', padding: '0 10px' }}
+                      onClick={() => {
+                        sortTinhTrangDo('tinhtrangdo', 'asc')
+                      }}></i>
+                  )}
+                </span>
+              </th>
+              <th style={{ width: '3%', minWidth: 10, textAlign: 'center' }}>Action</th>
+              <th style={{ width: '12%', maxWidth: 60, minWidth: 60, textAlign: 'center' }}>KTV</th>
+              <th style={{ width: '15%', minWidth: 60, textAlign: 'center' }}>Ghi chú</th>
             </tr>
           </thead>
           <tbody>
             {a.map((a, b) => {
               return (
-                <tr key={b}>
+                <tr key={`users ${b}`}>
                   <td style={{ textAlign: 'center', backgroundColor: 'pink' }}>{a.id}</td>
                   <td style={{ textTransform: 'capitalize' }}>
                     <div style={{ color: 'red', fontSize: '14px' }}>
-                      {' '}
                       {a.ho} {a.ten}
                     </div>
-                    <div> - SNV: {a.sohoso}</div>
-                    <div>- SĐT: {a.sodienthoai}</div>
+                    <div style={{ fontSize: '10px' }}> - SHS: {a.sohoso}</div>
+                    <div style={{ fontSize: '10px' }}>
+                      - SĐT:
+                      <a href={'tel:' + a.sodienthoai}>{a.sodienthoai}</a>
+                    </div>
                   </td>
                   <td>
-                    <div> {a.gioitinh === true ? 'Nam' : 'Nữ'}</div>
-                    <div> {dateFormat(a.namsinh, 'yyyy')}</div>
+                    <div> {a.gioitinh}</div>
+                    <div> {a.namsinh === null ? '' : moment(a.namsinh).format('YYYY')}</div>
                   </td>
                   <td style={{ textAlign: 'left', backgroundColor: 'rgb(195, 255, 217)' }}>
-                    {moment(a.ngayhendo).format('HH:mmA ddd')} <br />
-                    {moment(a.ngayhendo).format('DD-MM-YYYY ')}
+                    {a.ngayhendo === null ? '' : moment(a.ngayhendo).format('HH:mmA ddd')} <br />
+                    {a.ngayhendo === null ? '' : moment(a.ngayhendo).format('DD-MM-YYYY ')}
                   </td>
                   <td style={{ textAlign: 'left', backgroundColor: 'lightBlue' }}>
-                    {moment(a.ngaydo).format('HH:mmA ddd')} <br />
-                    {moment(a.ngaydo).format('DD-MM-YYYY ')}
+                    {a.ngaydo === null ? '' : moment(a.ngaydo).format('HH:mmA ddd')} <br />
+                    {a.ngaydo === null ? '' : moment(a.ngaydo).format('DD-MM-YYYY ')}
                   </td>
                   <td style={{ textTransform: 'capitalize' }}>
                     - {a.loaichidinh} <br /> - {a.tinhtrangdo} <br />- {a.khoaphong}
                   </td>
-
-                  <td style={{ textTransform: 'capitalize' }}>
-                    - KTV: {a.kythuavien} <br /> - BS: {a.bacsi}
-                  </td>
-                  <td>{a.ghichu}</td>
                   <td>
-                    <button
+                    <Button
+                      variant="outline-primary"
+                      style={{ fontSize: '12px' }}
+                      className="m-3 shadow"
+                      size="sm"
                       onClick={() => {
                         setB(a)
-                        setC(true)
+                        setD(true)
                       }}>
                       Sửa
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      style={{ fontSize: '12px' }}
+                      className="m-3 shadow"
+                      size="sm"
                       onClick={() => {
-                        C(a)
+                        handleDelete(a)
                       }}>
                       Xóa
-                    </button>
+                    </Button>
                   </td>
+                  <td style={{ textTransform: 'capitalize', fontSize: '10px' }}>
+                    - KTV: {a.kythuavien} <br /> - BS: {a.bacsi}
+                  </td>
+                  <td style={{ fontSize: '10px' }}>{a.ghichu}</td>
                 </tr>
               )
             })}
           </tbody>
-        </table>
+        </Table>
       )}
-
-      {d && <Thembenhnhan />}
-      {c && !d && <Suathongtin b={b} />}
+      <Thembenhnhan show={c} closeAddNew={closeAddNew} update={setA} />
+      <Suathongtin
+        show={d}
+        closeAddNew={closeAddNew}
+        update={setA}
+        b={b}
+        // sort={sort}
+        // sortField={sortField}
+        // sortOrder={sortOrder}
+      />
+      <ModalConfirmDel show={f} close={closeAddNew} C={C} idForDelete={idForDelete} update={setA}/>
+{g&&<Tablexoa setG={setG} update= {setA}/>}
     </div>
   )
 }

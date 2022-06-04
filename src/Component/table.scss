@@ -13,10 +13,9 @@
 }
 
 #customers tr:nth-child(even){background-color: #f2f2f2;}
+tr:not(.tr1):hover {background-color: rgb(230, 251, 215);}
 
-#customers tr:hover {background-color: rgb(200, 239, 255);}
-
-#customers th {
+.thead {
   padding-top: 8px;
   padding-bottom: 6px;
   text-align: center;
@@ -27,23 +26,25 @@
   font-size: 14px;
 
 }
-
-input,select{
-  margin : 2px 20px;
-  width : 240px;  
-  height: 24px;
-  position:absolute;
-  right: 60px;
+.table {
+  font-size: 12px
 }
+// input,select{
+//   margin : 2px 20px;
+//   width : 240px;  
+//   height: 24px;
+//   position:absolute;
+//   right: 60px;
+// }
 
-textarea{
-  margin : 2px 20px;
-  width : 300px;  
-  height: 80px;
-  // position:absolute;
-  right: 60px;
-  display: block;
-}
+// textarea{
+//   margin : 2px 20px;
+//   width : 300px;  
+//   height: 80px;
+//   // position:absolute;
+//   right: 60px;
+//   display: block;
+// }
 
 .optionBox{
   margin :0  10px 0 30px ;

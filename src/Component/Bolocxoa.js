@@ -6,8 +6,8 @@ import moment from 'moment'
 import ReactSelect from 'react-select'
 import { components } from 'react-select'
 import _ from 'lodash'
-const Boloc = (props) => {
-  const { update , setG} = props
+const Bolocxoa = (props) => {
+  const { update } = props
   const [filterPatient, setFilterPatient] = useState({
     hoVaTen: '',
     tinhTrangDo: '',
@@ -20,19 +20,7 @@ const Boloc = (props) => {
     setFilterPatient({ ...filterPatient, [T]: e.target.value })
   }
   const F = async () => {
-    if (filterPatient.hoVaTen==='admin') {setG(true) 
-
-     setFilterPatient({
-        hoVaTen: '',
-        tinhTrangDo: '',
-        henTuNgay: '',
-        henDenNgay: '',
-        doTuNgay: '',
-        doDenNgay: '',
-      })
-
-    }
-    const A = await axios.get('/api/get')
+    const A = await axios.get('/api/get/statusoff')
     const data = await A.filter(function (a, b) {
       return (
         (a.ten
@@ -130,7 +118,7 @@ const Boloc = (props) => {
         border: '1px solid blue',
       }}
       className="shadow ">
-      <Modal.Title style={{ margin: '5px', color: 'Blue' }}>Tìm Kiếm</Modal.Title>
+      <Modal.Title style={{ margin: '5px', color: 'Blue' }}>Tìm Kiếm BN đã ẩn</Modal.Title>
 
       <Form>
         <Form.Group className="" as={Row}>
@@ -295,7 +283,7 @@ const Boloc = (props) => {
         </Form.Group>
       </Form>
       <Row>
-        <Button
+        {/* <Button
           as={Col}
           variant="outline-danger"
           size="sm"
@@ -304,7 +292,7 @@ const Boloc = (props) => {
             F()
           }}>
           Lọc bệnh nhân
-        </Button>
+        </Button> */}
         <Button
           as={Col}
           variant="outline-info"
@@ -332,4 +320,4 @@ const Boloc = (props) => {
   )
 }
 
-export default Boloc
+export default Bolocxoa
