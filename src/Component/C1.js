@@ -8,6 +8,9 @@ import ModalConfirmDel from './Xacnhanxoa.js'
 import Suathongtin from './Sua thong tin.js'
 import Tablexoa from './Tablexoa.js'
 import Boloc from './Boloc.js'
+import Uploadfile from './Uploadfile.js'
+import { Buffer } from 'buffer'
+
 import { Button, Col, Row, Table } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
@@ -28,6 +31,7 @@ const C1 = () => {
 
   const [sortField, setSortField] = useState('id')
   const [sortOrder, setSortOrder] = useState('desc')
+  const [picture, setPicture] = useState('')
 
   const Fi = async () => {
     const A = await axios.get('/api/get')
@@ -98,22 +102,38 @@ const C1 = () => {
 
   const handleDelete = (userId) => {
     setF(true)
-    setIdForDelete(userId) }
-  
+    setIdForDelete(userId)
+  }
+
+  let getPicture = async (a) => {
+    try {
+      const picture1 = await axios.get('/api/getpicture', { params: { id: a.id } })
+      // console.log('picture1', picture1)
+      let picture2 = ''
+      picture1
+        ? (picture2 = new Buffer(picture1.image.data, 'base64').toString('binary'))
+        : setF('')
+      setPicture(picture2)
+    } catch (e) {
+      console.log(e)
+    }
+  }
   // const [idForDelete, setIdForDelete] = useState({})
 
-  console.log('Kiem tra g', g)
-  console.log('Kiem tra toàn bộ tải về', a)
+  // console.log('Kiem tra g', g)
+  console.log('Kiem tra picture', picture)
+
   return (
     <div>
-      {!c && !d && !g &&(
+      {!c && !d && !g && (
         <h1 style={{ color: 'red', textAlign: 'center' }} id="ten">
           Danh sách EEG: {a.length} bn
         </h1>
       )}
+      {/* <Uploadfile1/> */}
       {!c && !d && !g && <Boloc update={setA} setG={setG} />}
       <Row style={{ paddingLeft: '13px' }}>
-        {!c && !d && e && !g &&(
+        {!c && !d && e && !g && (
           <Button
             as={Col}
             xs="5"
@@ -132,7 +152,7 @@ const C1 = () => {
           </Button>
         )}
 
-        {!c && !d && e && !g &&(
+        {!c && !d && e && !g && (
           <Button
             as={Col}
             xs="5"
@@ -150,7 +170,7 @@ const C1 = () => {
         )}
       </Row>
 
-      {!c && !d && !g &&(
+      {!c && !d && !g && (
         <Table striped bordered hover size="sm" className="m-2 table">
           <thead style={{ position: 'sticky', top: '0px' }} className="thead">
             <tr className="tr1">
@@ -346,7 +366,7 @@ const C1 = () => {
                   </td>
                   <td>
                     <div> {a.gioitinh}</div>
-                    <div> {a.namsinh === null ? '' : moment(a.namsinh).format('YYYY')}</div>
+                    <div> {a.namsinh}</div>
                   </td>
                   <td style={{ textAlign: 'left', backgroundColor: 'rgb(195, 255, 217)' }}>
                     {a.ngayhendo === null ? '' : moment(a.ngayhendo).format('HH:mmA ddd')} <br />
@@ -368,6 +388,8 @@ const C1 = () => {
                       onClick={() => {
                         setB(a)
                         setD(true)
+                        getPicture(a)
+
                       }}>
                       Sửa
                     </Button>
@@ -385,7 +407,8 @@ const C1 = () => {
                   <td style={{ textTransform: 'capitalize', fontSize: '10px' }}>
                     - KTV: {a.kythuavien} <br /> - BS: {a.bacsi}
                   </td>
-                  <td style={{ fontSize: '10px' }}>{a.ghichu}</td>
+                  <td style={{ fontSize: '10px' }}>{a.ghichu} </td>
+                  {/* <td style={{ fontSize: '10px' }}>{a.ghichu} <br /> {a.image}</td> */}
                 </tr>
               )
             })}
@@ -393,17 +416,9 @@ const C1 = () => {
         </Table>
       )}
       <Thembenhnhan show={c} closeAddNew={closeAddNew} update={setA} />
-      <Suathongtin
-        show={d}
-        closeAddNew={closeAddNew}
-        update={setA}
-        b={b}
-        // sort={sort}
-        // sortField={sortField}
-        // sortOrder={sortOrder}
-      />
-      <ModalConfirmDel show={f} close={closeAddNew} C={C} idForDelete={idForDelete} update={setA}/>
-{g&&<Tablexoa setG={setG} update= {setA}/>}
+      <Suathongtin show={d} closeAddNew={closeAddNew} update={setA} b={b}  picture= {picture} setPicture={setPicture} />
+      <ModalConfirmDel show={f} close={closeAddNew} C={C} idForDelete={idForDelete} update={setA} />
+      {g && <Tablexoa setG={setG} update={setA} />}
     </div>
   )
 }

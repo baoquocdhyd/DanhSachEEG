@@ -9,14 +9,14 @@ const Thembenhnhan = (props) => {
   const { show, closeAddNew, update } = props
   const [f, setF] = useState('')
   const [h, setH] = useState(false) //bất hoạt nút thêm
-
+  const [url, setUrl] = useState('')
 
   const [a, setA] = useState({
     ho: '',
     ten: '',
     sohoso: '',
     gioitinh: '',
-    namsinh: undefined,
+    namsinh: '',
     sodienthoai: '',
     ngaynhanhen: moment(Date.now()).format('YYYY-MM-DDTHH:mm'),
     ngayhendo: undefined,
@@ -55,7 +55,7 @@ const Thembenhnhan = (props) => {
       ten: '',
       sohoso: '',
       gioitinh: '',
-      namsinh: undefined,
+      namsinh: '',
       sodienthoai: '',
       ngaynhanhen: moment(Date.now()).format('YYYY-MM-DDTHH:mm'),
       ngayhendo: undefined,
@@ -69,6 +69,7 @@ const Thembenhnhan = (props) => {
       status: 1,
       image: '',
     })
+    setUrl('')
   }
   let A = (e, T) => {
     setA({ ...a, [T]: e.target.value })
@@ -80,17 +81,21 @@ const Thembenhnhan = (props) => {
       const c = await axios.get('/api/get')
       await update(c)
       // await clearForm()
-      {b ?  await clearForm() : setF('') }
+      {
+        b ? await clearForm() : setF('')
+      }
       await setH(false)
 
-      {b ?  await closeAddNew() : setF('') }
+      {
+        b ? await closeAddNew() : setF('')
+      }
 
       toast.info('Tạo mới thành công!')
     } catch (e) {
       console.log(e)
     }
   }
-  // console.log('kiem tra b',b) 
+  // console.log('kiem tra b',b)
   // console.log('kiem tra them', a)
   return (
     <div style={{}}>
@@ -116,8 +121,6 @@ const Thembenhnhan = (props) => {
             disabled={h}
             onClick={async () => {
               await B(a)
-              // closeAddNew()
-              // clearForm()
             }}>
             Thêm bệnh nhân
           </Button>
@@ -204,7 +207,7 @@ const Thembenhnhan = (props) => {
             <Form.Group className="">
               <Form.Label>Năm sinh</Form.Label>
               <Form.Control
-                type="date"
+                type="text"
                 size="sm"
                 placeholder=""
                 onChange={(e) => {
@@ -227,19 +230,19 @@ const Thembenhnhan = (props) => {
               />
             </Form.Group>
 
-            <Form.Group className="">
+            {/* <Form.Group className="">
               <Form.Label>Ngày nhận hẹn</Form.Label>
               <Form.Control
                 placeholder=""
                 size="sm"
                 type="datetime-local"
-                className=""
+                className="" disabled
                 value={a.ngaynhanhen}
                 onChange={(e) => {
                   A(e, 'ngaynhanhen')
                 }}
               />
-            </Form.Group>
+            </Form.Group> */}
 
             <Form.Group className="">
               <Form.Label>Ngày hẹn đo</Form.Label>
@@ -375,18 +378,32 @@ const Thembenhnhan = (props) => {
                 placeholder=""
                 style={{ width: '250px' }}
                 className=""
-                // file={a.image}
-                onChange={(e) => {
-                  setA({ ...a, image: URL.createObjectURL(e.target.files[0]) })
+                onChange={async (e) => {
+                  const toBase64 = (file) =>
+                    new Promise((resolve, reject) => {
+                      const reader = new FileReader()
+                      reader.readAsDataURL(file)
+                      reader.onload = () => resolve(reader.result)
+                      reader.onerror = (error) => reject(error)
+                    })
+                  try {
+                    const result = await toBase64(e.target.files[0])
+                    const url = await URL.createObjectURL(e.target.files[0])
+                    setA({ ...a, image: result })
+                    setUrl(url)
+                  } catch (error) {
+                    console.error(error)
+                  }
                 }}
               />
               <div
                 style={{
-                  backgroundImage: `url( ${a.image}  )`,
-                  height: '100px',
-                  backgroundSize: '50%',
+                  backgroundImage: `url( ${url}  )`,
+                  height: '200px',
+                  backgroundSize: '100%',
                   backgroundRepeat: 'no-repeat',
                   border: ' 1px solid',
+                  borderRadius: '5px',
                 }}></div>
             </Form.Group>
           </Form>
@@ -398,11 +415,6 @@ const Thembenhnhan = (props) => {
             disabled={h}
             onClick={async () => {
               await B(a)
-
-              // {b ?  closeAddNew(): none}
-              // await clearForm()
-              // closeAddNew()
-             
             }}>
             Thêm bệnh nhân
           </Button>

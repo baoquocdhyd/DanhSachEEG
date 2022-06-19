@@ -110,9 +110,9 @@ const Boloc = (props) => {
   useEffect(() => {
     F()
   }, [filterPatient, optionSelected])
-  console.log('kiem tra trạng thái', moment(filterPatient.henDenNgay).format("'YYYY-MM-DDTHH:mm'"))
-  console.log('kiem tra trạng thái cuối ngày', moment(filterPatient.henDenNgay).startOf("day").format("x"))
-  console.log('kiem tra trạng tháihen den', moment(filterPatient.henTuNgay).hours(0).minutes(0).seconds(0).milliseconds(0).format('YYYY-MM-DDTHH:mm') )
+  // console.log('kiem tra trạng thái', moment(filterPatient.henDenNgay).format("'YYYY-MM-DDTHH:mm'"))
+  // console.log('kiem tra trạng thái cuối ngày', moment(filterPatient.henDenNgay).startOf("day").format("x"))
+  // console.log('kiem tra trạng tháihen den', moment(filterPatient.henTuNgay).hours(0).minutes(0).seconds(0).milliseconds(0).format('YYYY-MM-DDTHH:mm') )
   
 
   return (

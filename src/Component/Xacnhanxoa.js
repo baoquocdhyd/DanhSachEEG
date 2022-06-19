@@ -3,7 +3,7 @@ import axios from '../axios.js'
 import { useState, useLayoutEffect } from 'react'
 
 const ModalConfirmDel = (props) => {
-  const { show, close, C, idForDelete, update } = props
+  const { show, close, idForDelete, update } = props
 const [f, setF] = useState('') 
   return (
     <div>
@@ -34,8 +34,6 @@ const [f, setF] = useState('')
               const A = await axios.get('/api/get')
 							await update(A)
 							{res?close():setF('')}
-              // C(idForDelete)
-              close()
             }}>
             Confirm
           </Button>

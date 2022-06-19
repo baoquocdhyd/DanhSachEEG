@@ -3,11 +3,13 @@ import { useState, useLayoutEffect } from 'react'
 import moment from 'moment'
 import { Modal, Button, Form, Col, Row } from 'react-bootstrap'
 import { toast } from 'react-toastify'
+import { Buffer } from 'buffer'
 
 const Suathongtin = (props) => {
-  const { show, closeAddNew, update, b ,} = props
+  const { show, closeAddNew, update, b, picture, setPicture } = props
   const [f, setF] = useState('')
   const [h, setH] = useState(false) //bất hoạt nút save
+  const [url, setUrl] = useState('')
 
   const [a, setA] = useState({
     id: '',
@@ -15,7 +17,7 @@ const Suathongtin = (props) => {
     ten: '',
     sohoso: '',
     gioitinh: '',
-    namsinh: undefined,
+    namsinh: '',
     sodienthoai: '',
     ngayhendo: '',
     loaichidinh: '',
@@ -40,21 +42,34 @@ const Suathongtin = (props) => {
       await update(c)
       // closeAddNew()
       toast.info('Thay đổi thành công!')
-      {b ?  await closeAddNew() : setF('') }
+      {
+        b ? await closeAddNew() : setF('')
+      }
       await setH(false)
-
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  let savePicture = async (a) => {
+    try {
+      await setH(true)
+      let res = await axios.put('/api/put/picture', a)
+      toast.info('Đã lưu ảnh thành công!')
+      await setH(false)
     } catch (e) {
       console.log(e)
     }
   }
   useLayoutEffect(() => {
+    let pic = ''
+    b.image ? (pic = new Buffer(b.image.data, 'base64').toString('binary')) : setF('')
     setA({
       id: b.id,
       ho: b.ho,
       sohoso: b.sohoso,
       ten: b.ten,
       gioitinh: b.gioitinh,
-      namsinh: b.namsinh ? moment(b.namsinh).format('YYYY-MM-DD') : undefined,
+      namsinh: b.namsinh,
       sodienthoai: b.sodienthoai,
       ngaynhanhen: moment(b.ngaynhanhen).format('YYYY-MM-DDTHH:mm'),
       ngayhendo: b.ngayhendo ? moment(b.ngayhendo).format('YYYY-MM-DDTHH:mm') : undefined,
@@ -65,17 +80,20 @@ const Suathongtin = (props) => {
       kythuavien: b.kythuavien,
       bacsi: b.bacsi,
       ghichu: b.ghichu,
-      status: b.status = true ? 1: 0,
-      // status: 1,
-      image: b.image,
+      status: (b.status = true ? 1 : 0),
+      image: picture ? picture : '',
     })
   }, [b])
-// console.log('Kiểm tra sau sửa', a) 
+  // console.log('Kiểm tra sau sửa', b.image)
   return (
     <div style={{}}>
       <Modal
         show={show}
-        onHide={closeAddNew}
+        onHide={() => {
+          closeAddNew()
+          setPicture('')
+          setUrl('')
+        }}
         backdrop="static"
         keyboard={false}
         animation={false}
@@ -102,8 +120,8 @@ const Suathongtin = (props) => {
         </Modal.Footer>
         <Modal.Body style={{ paddingTop: '0px' }}>
           <Form>
-            <Form.Group className="" >
-              <Form.Label >Họ và tên lót</Form.Label>
+            <Form.Group className="">
+              <Form.Label>Họ và tên lót</Form.Label>
               <Form.Control
                 type="text"
                 size="sm"
@@ -148,7 +166,6 @@ const Suathongtin = (props) => {
                 <Form.Check
                   type="radio"
                   id=""
-                  
                   name="gioitinh"
                   label="Nam"
                   defaultChecked={b.gioitinh === 'nam'}
@@ -174,13 +191,13 @@ const Suathongtin = (props) => {
             <Form.Group className="">
               <Form.Label>Năm sinh</Form.Label>
               <Form.Control
-                type="date"
+                type="text"
                 size="sm"
                 placeholder=""
                 onChange={(e) => {
                   A(e, 'namsinh')
                 }}
-                value={b.namsinh ? moment(a.namsinh).format('YYYY-MM-DD') : undefined}
+                value={a.namsinh}
               />
             </Form.Group>
 
@@ -197,19 +214,19 @@ const Suathongtin = (props) => {
               />
             </Form.Group>
 
-            <Form.Group className="">
+            {/* <Form.Group className="">
               <Form.Label>Ngày nhận hẹn</Form.Label>
               <Form.Control
                 placeholder=""
                 size="sm"
                 type="datetime-local"
-                className=""
+                className="" disabled
                 value={moment(a.ngaynhanhen).format('YYYY-MM-DDTHH:mm')}
                 onChange={(e) => {
                   A(e, 'ngaynhanhen')
                 }}
               />
-            </Form.Group>
+            </Form.Group> */}
 
             <Form.Group className="">
               <Form.Label>Ngày hẹn đo</Form.Label>
@@ -345,19 +362,43 @@ const Suathongtin = (props) => {
                 placeholder=""
                 style={{ width: '250px' }}
                 className=""
-                // file={a.image}
-                onChange={(e) => {
-                  setA({ ...a, image: URL.createObjectURL(e.target.files[0]) })
+                onChange={async (e) => {
+                  const toBase64 = (file) =>
+                    new Promise((resolve, reject) => {
+                      const reader = new FileReader()
+                      reader.readAsDataURL(file)
+                      reader.onload = () => resolve(reader.result)
+                      reader.onerror = (error) => reject(error)
+                    })
+                  try {
+                    const result = await toBase64(e.target.files[0])
+                    const url = await URL.createObjectURL(e.target.files[0])
+
+                    setA({ ...a, image: result })
+                    setUrl(url)
+                  } catch (error) {
+                    console.error(error)
+                  }
                 }}
               />
               <div
                 style={{
-                  backgroundImage: `url( ${a.image}  )`,
-                  height: '100px',
-                  backgroundSize: '50%',
+                  backgroundImage: `url( ${url ? url : picture}  )`,
+                  height: '200px',
+                  backgroundSize: '100%',
                   backgroundRepeat: 'no-repeat',
                   border: ' 1px solid',
+                  borderRadius: '5px',
                 }}></div>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={h}
+                onClick={() => {
+                  savePicture(a)
+                }}>
+                Save only Picture
+              </Button>
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -368,10 +409,19 @@ const Suathongtin = (props) => {
             disabled={h}
             onClick={() => {
               B(a)
+              setPicture('')
+              setUrl('')
             }}>
             Save Changes
           </Button>
-          <Button variant="secondary" size="sm" onClick={closeAddNew}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              closeAddNew()
+              setPicture('')
+              setUrl('')
+            }}>
             Close
           </Button>
         </Modal.Footer>
@@ -381,4 +431,3 @@ const Suathongtin = (props) => {
 }
 
 export default Suathongtin
-
